@@ -16,17 +16,17 @@ if not hasattr(np, "alen"):
 
 def run_calibration_branch(expansions, subject_id, ct, structures_to_deform, bone_mask, output_folder, *, initial_prev, stop_condition):
     """
-    Run one branch (either shrink or expand) until the monotonicity condition breaks.
+    Run one branch (either shrink or expand) until the monotonicity condition breaks (i.e. platipy reaches maximum shrinkage/ expansion achievable for the subject).
 
     Parameters
-    - expansions (iterable of float): Expansion values to try (e.g. negative or positive).
-    - initial_prev (float): Initial previous volume value (large for shrink, small for expand).
-    - stop_condition (callable): Function taking (prev_volume, current_volume) and returning True if we should stop.
+        - expansions (iterable of float): Expansion values to try (e.g. negative or positive).
+        - initial_prev (float): Initial previous volume value (large for shrink, small for expand).
+        - stop_condition (callable): Function taking (prev_volume, current_volume) and returning True if we should stop.
 
     Returns
-    - gas_volumes (list[float): Monotonic gas volumes.
-    - subject_ids (list[str]): Corresponding subject IDs.
-    - used_expansions (list[float]): Expansion values that were actually used.
+        - gas_volumes (list[float): Monotonic gas volumes.
+        - subject_ids (list[str]): Corresponding subject IDs.
+        - used_expansions (list[float]): Expansion values that were actually used.
     """
 
     break_index = None
@@ -70,13 +70,13 @@ def run_calibration_branch(expansions, subject_id, ct, structures_to_deform, bon
 # ---------------------------------------------------------------------
 
 # Base data directory
-path = "../data"
+path = "./data"
 
 # Folders for CT and segmentations
 input_CT_folder = os.path.join(path, "input_CT")
 input_SEG_folder = os.path.join(path, "input_SEG")
 
-# Structures to deform (here: only Bowel Gas)
+# Structures to deform (here: only BowelGas)
 structure_names_to_deform = ["BowelGas"]
 
 # Output folder for the deformed images used for calibration
@@ -116,7 +116,7 @@ for subject in subject_file_list[:]:
     subject_id = (os.path.basename(subject)).split('.')[0]
     print(f'Processing subject {subject_id}...')
 
-    # Load CT and generate bone mask
+    # Load CT and generate bone mask 
     try: 
         ct = sitk.ReadImage(os.path.join(input_CT_folder, subject))
         bone_mask = get_bone_mask(ct)
@@ -138,8 +138,8 @@ for subject in subject_file_list[:]:
 
 
     # -----------------------------------------------------------------
-    # 1) Shrink phase: negative expansions (0, -2, -4, ...)
-    #    Stop when the gas volume starts increasing again (current >= previous)
+    # 1) Shrink branch: negative expansions (0, -2, -4, ...)
+    #    Stop when the BowelGas volume starts increasing again (current >= previous)
     # -----------------------------------------------------------------
 
     gas_volumes_shrink, patient_ids_shrink, expansions_negative_all = run_calibration_branch(expansions_negative, subject_id, ct, structures_to_deform, bone_mask, output_calib_folder,
@@ -147,16 +147,15 @@ for subject in subject_file_list[:]:
 
 
     # -----------------------------------------------------------------
-    # 2) Expansion phase: positive expansions (2, 4, 6, ...)
-    #    Stop when the gas volume starts decreasing again (current <= previous)
+    # 2) Expansion branch: positive expansions (2, 4, 6, ...)
+    #    Stop when the BowelGas volume starts decreasing again (current <= previous)
     # -----------------------------------------------------------------
 
-    gas_volumes_expand, patient_ids_expand, expansions_positive_all = run_calibration_branch(expansions_positive, subject_id, ct, structures_to_deform, bone_mask, output_calib_folder,
-        initial_prev=-1e4, stop_condition=lambda prev, cur: cur <= prev)
+    gas_volumes_expand, patient_ids_expand, expansions_positive_all = run_calibration_branch(expansions_positive, subject_id, ct, structures_to_deform, bone_mask, output_calib_folder, initial_prev=-1e4, stop_condition=lambda prev, cur: cur <= prev)
 
 
     # -----------------------------------------------------------------
-    # 3) Combine shrink + expand results for this subject
+    # 3) Combine shrink + expand results for current subject
     # -----------------------------------------------------------------
 
     # All gas volumes (negative + positive expansions)

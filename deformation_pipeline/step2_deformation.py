@@ -10,7 +10,6 @@ import pandas as pd
 np.random.seed(42)
 random.seed(42)
 
-
 # --- NumPy 2 compatibility shim for old Platipy code ---
 if not hasattr(np, "alen"):
     # np.alen used to be "length of first axis"
@@ -23,35 +22,35 @@ if not hasattr(np, "alen"):
 # ---------------------------------------------------------------------
 
 # Base data directory
-path = "../data"
+path = "./data"
 
-# Folders for CT and segmentations
+# Folders for CT and structure segmentations
 input_CT_folder = os.path.join(path, "input_CT")
 input_SEG_folder = os.path.join(path, "input_SEG")
 
-# Structures to deform (here: Liver, Spleen, Kidneys - shifted; Bowel Gas - expanded)
+# Structures to deform (here: Liver, Spleen, Kidneys - xyz shift; BowelGas - isotropic shrink/expansion)
 structure_names_to_deform = ["Liver", "Spleen", "Kidney Left", "Kidney Right", "BowelGas"]
 
-# Structures for which deformed segmentations will be saved (here: only Bowel Gas)
+# Structures for which deformed segmentations will be saved (here: only BowelGas)
 structure_names_to_be_deformed = ["BowelGas"]
 
-# Output folder for all deformed CTs and Bowel Gas segmentations
+# Output folder for all deformed CTs and BowelGas segmentations
 output_deform_folder = os.path.join(path, "output_deformation")
 os.makedirs(output_deform_folder, exist_ok=True)
 
 
 
 # ---------------------------------------------------------------------
-# Calibration data handling for Bowel Gas expansion
+# Calibration data handling for BowelGas expansion
 # ---------------------------------------------------------------------
 
-# Load calibration curve from step 1 (expansion vs percentage difference)
+# Load calibration curve from step 1 (expansion vs percentage change in volume)
 df_calibration = pd.read_csv(os.path.join(path, "output_calibration","calibration_curve.csv"), delimiter=",")
 print(df_calibration)
 
-# Extract per-subject expansion vectors and percentage differences from the calibration curve
+# Extract per-subject expansion vectors and percentage volume changes from the calibration curve
 expansion_vectors_dict, percentage_diffs_dict = extract_calibration_data(df_calibration)
-# Generate 4 target percentage differences for each subject. These representing the target volume changes achievable when deforming the bowel gas and will be used to interpolate the actual expansion (in mm) from the calibration curve.
+# Generate 4 target percentage volume changes for each subject. These represent the target volume changes achievable when deforming the BowelGas and will be used to interpolate the actual expansion (in mm) from the calibration curve.
 df_expansions = create_expansions_df(percentage_diffs_dict)
 print(df_expansions)
 
@@ -105,13 +104,13 @@ for _, row_expansions in df_expansions.iloc[:].iterrows():
     # (Optional) Save all deformed structures
     # for structure in structures_to_deform:
     #     print(f'Writing {patient_id}_{structure}_d0.nii.gz ...')
-    #     sitk.WriteImage(structures_to_deform[structure], os.path.join(path, "SynthDeform", f"{patient_id}_{structure}_d0.nii.gz"))
+    #     sitk.WriteImage(structures_to_deform[structure], os.path.join(output_deform_folder, f"{patient_id}_{structure}_d0.nii.gz"))
 
     for structure in structures_to_be_deformed:
         print(f'Writing {subject_id}_{structure}_d0.nii.gz ...')
         sitk.WriteImage(structures_to_be_deformed[structure], os.path.join(output_deform_folder, f"{subject_id}_{structure}_d0.nii.gz"))
 
-    # Compute initial Bowel Gas volume for this subject (baseline before deformation)
+    # Compute initial BowelGas volume for this subject (baseline before deformation)
     volume_init = load_and_calculate_volume_seg(os.path.join(output_deform_folder, f"{subject_id}_{structure}_d0.nii.gz"))
     save_gas_volumes.append(volume_init) 
     save_subject_ids.append(f"{subject_id}_d0")
@@ -143,14 +142,14 @@ for _, row_expansions in df_expansions.iloc[:].iterrows():
             # ----------------------------------------------------------
 
             if structure == "BowelGas": 
-                # Use the calibration curve to determine how much to expannd Bowel Gas (in mm) to reach the target percentage volume change.
+                # Use the calibration curve to determine how much to expannd BowelGas (in mm) to reach the target percentage volume change.
                 desired_expansion_perc = row_expansions[f"Expansion{i}"]
 
                 # Subject-specific calibration information from step 1
                 expansions_mm = expansion_vectors_dict[subject_id]
                 percentage_diffs = percentage_diffs_dict[subject_id]
 
-                # Interpolate to find the expansion in mm that yields the desired percentage difference
+                # Interpolate to find the expansion in mm that yields the desired percentage volume change
                 desired_expansion_mm = calculate_desired_expansion(expansions_mm, percentage_diffs, desired_expansion_perc)
 
                 print(f"Desired Percentage Difference: {desired_expansion_perc:.2f}%")
@@ -165,7 +164,7 @@ for _, row_expansions in df_expansions.iloc[:].iterrows():
 
 
             # ----------------------------------------------------------
-            # 2) Organ motion (Liver/Spleen/Kidneys)
+            # 2) Organ motion (Liver/ Spleen/ Kidney Left/ Kidney Right)
             # ----------------------------------------------------------
 
             else: 
@@ -188,7 +187,7 @@ for _, row_expansions in df_expansions.iloc[:].iterrows():
         dvf_transform = sitk.CompositeTransform(all_organ_transforms)
 
         # (Optional) Save the composite transform
-        # sitk.WriteTransform(dvf_transform, os.path.join(path, "SynthDeform", f"{patient_id}_transform_d{i}.tfm"))
+        # sitk.WriteTransform(dvf_transform, os.path.join(output_deform_folder, f"{patient_id}_transform_d{i}.tfm"))
         # print(f"Composite transform saved to {patient_id}_transform_d{i}.tfm")
         
 
@@ -218,7 +217,7 @@ for _, row_expansions in df_expansions.iloc[:].iterrows():
         # (Optional) Save all deformed structures
         # for structure in deformed_structures:
         #     print(f'Writing {patient_id}_{structure}_d{i}.nii.gz ...')
-        #     sitk.WriteImage(deformed_structures[structure], os.path.join(path, "SynthDeform", f"{patient_id}_{structure}_d{i}.nii.gz"))
+        #     sitk.WriteImage(deformed_structures[structure], os.path.join(output_deform_folder, f"{patient_id}_{structure}_d{i}.nii.gz"))
 
         for structure in deformed_adjacent_structures:
             print(f'Writing {subject_id}_{structure}_d{i}.nii.gz ...')
@@ -227,7 +226,7 @@ for _, row_expansions in df_expansions.iloc[:].iterrows():
 
 
         # --------------------------------------------------------------
-        # Compute and storeBowel Gas volume for this deformation version
+        # Compute and store BowelGas volume for this deformation version
         # --------------------------------------------------------------
         
         volume_deformed = load_and_calculate_volume_seg(os.path.join(output_deform_folder, f"{subject_id}_{structure}_d{i}.nii.gz"))
@@ -242,11 +241,11 @@ results_df = pd.DataFrame({
 
 results_csv = os.path.join(output_deform_folder, "gas_volumes.csv")
 results_df.to_csv(results_csv, index=False)
-print(f"\nBowel gas volumes of deformed masks saved to: {results_csv}")
+print(f"\nBowelGas volumes of deformed masks saved to: {results_csv}")
 
 
 # ---------------------------------------------------------------------
-# Save deformation parameters (Bowel Gas expansions & Orga shifts)
+# Save deformation parameters (BowelGas expansions & Organ shifts)
 # ---------------------------------------------------------------------
 deformation_df = pd.DataFrame(deformation_data, columns=["SubjectID", "Version", "StructureName", "X", "Y", "Z"])
 deformation_csv = os.path.join(output_deform_folder, "deformation_data.csv")
