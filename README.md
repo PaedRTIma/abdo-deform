@@ -1,7 +1,7 @@
 # abdo-deform
 ## Description
 
-**abdo-deform** is a PlatiPy-based, paediatric population-informed synthetic deformation framework designed to generate anatomically realistic abdominal variations in CT images. It models intra-subject variability using three organ-specific non-linear transformations:
+**abdo-deform** is a [PlatiPy](https://github.com/pyplati/platipy?tab=readme-ov-file)-based, paediatric population-informed synthetic deformation framework designed to generate anatomically realistic abdominal variations in CT images. It models intra-subject variability using three organ-specific non-linear transformations:
 - Isotropic shrinkage/ expansion of the bowel gas.
 - Shifting of the liver, spleen, and kidneys.
 - Uniform scaling of the CT image.
