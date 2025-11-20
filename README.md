@@ -24,10 +24,10 @@ The deformation pipeline consists of **three steps**, located in the `deformatio
 ```
 ├── abdo-deform
 │   ├── deformation_pipeline
-│       ├── deformation_utils.py
-│       ├── step1_calibration.py
-│       ├── step2_deformation.py
-│       ├── step3_scaling.py
+│   │   ├── deformation_utils.py
+│   │   ├── step1_calibration.py
+│   │   ├── step2_deformation.py
+│   │   ├── step3_scaling.py
 │   ├── data
 │       ├── input_CT
 │       ├── input_SEG
@@ -59,7 +59,7 @@ python deformation_pipeline/step2_deformation.py
 
 ### Step 3: Apply Scaling
 
-The final step of the pipeline simulates ± 1 year of anatomical growth by uniformly scaling the CT image and its associated structures. A random scaling factor is sampled from a uniform distribution ranging ± 4.5%, an average growth factor derived from standardised paediatric growth charts published by the United States National Centre for Health Statistics, [Kuczmarski et al. (2000)](https://pubmed.ncbi.nlm.nih.gov/11183293/).
+The final step of the pipeline simulates ± 1 year of **anatomical growth** by uniformly scaling the CT image and its associated structures. A random scaling factor is sampled from a uniform distribution ranging ± 4.5%, an average growth factor derived from standardised paediatric growth charts published by the United States National Centre for Health Statistics, [Kuczmarski et al. (2000)](https://pubmed.ncbi.nlm.nih.gov/11183293/).
 
 The scripts scales the four deformed CT versions generated at Step 2, and saves each as a separate file.
 
