@@ -1,3 +1,7 @@
+# abdo-deform © 2025 Cristina Ghica, University College London
+# Distributed under the Academic Software License (ASL).
+# See the LICENSE file in the project root for full details.
+
 import os
 import random
 import SimpleITK as sitk
@@ -58,12 +62,7 @@ def generate_calibration_curve(subject_id, ct, structures_to_deform, bone_mask, 
                 output_calibration, f"{subject_id}_{structure}_e{expansion}.nii.gz"))
            
             # Load the deformed BowelGas mask to calculate the volume
-            nii_img = nib.load(os.path.join(
-                output_calibration, f"{subject_id}_{structure}_e{expansion}.nii.gz"))
-            header_info = nii_img.header
-            voxel_dimensions = header_info['pixdim'][1:4]
-            nii_data = nii_img.get_fdata()
-            volume = calculate_volume_seg(nii_data, voxel_dimensions)
+            volume = load_and_calculate_volume_seg(os.path.join(output_calibration, f"{subject_id}_{structure}_e{expansion}.nii.gz"))
             print(f'=> Gas volume: {volume} ml')
 
     except Exception as e:
