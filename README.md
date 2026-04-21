@@ -68,4 +68,9 @@ python deformation_pipeline/step3_scaling.py
 ```
 
 ## Publication
-In preparation...
+This work is part of **"A novel deep-learning approach for monitoring gastrointestinal air variation during radiotherapy in young patients using radiographs”**, now accepted for publication in _Physics in Medicine & Biology_.
+
+## License
+abdo-deform is © 2025, Cristina Ghica. 
+
+abdo-deform is published and distributed under the Academic Software License v1.0 (ASL). abdo-deform is distributed in the hope that it will be useful for non-commercial academic research, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the ASL for more details.
