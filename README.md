@@ -68,7 +68,9 @@ python deformation_pipeline/step3_scaling.py
 ```
 
 ## Publication
-This work is part of **"A novel deep-learning approach for monitoring gastrointestinal air variation during radiotherapy in young patients using radiographs”**, now accepted for publication in _Physics in Medicine & Biology_.
+When referencing, please include a bibliographical reference to the paper below:
+
+A-C Ghica, M Simard, Mikaël; S Yu, A Nisbet,J Gains, Y Zhang, P Lim, and C Veiga. "A novel deep-learning approach for monitoring gastrointestinal air variation during radiotherapy in young patients using radiographs". [Physics in Medicine & Biology 71 (2026) 095025](https://doi.org/10.1088/1361-6560/ae6222).
 
 ## License
 abdo-deform is © 2025, Cristina Ghica. 
